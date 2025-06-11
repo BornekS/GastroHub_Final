@@ -1,0 +1,21 @@
+﻿@model List<GastroHub.Models.Recipe>
+
+<h2>Moji recepti</h2>
+
+@if (Model.Any())
+{
+    <ul>
+        @foreach (var recipe in Model)
+        {
+            <li>
+                <a href="@Url.Action("RecipeDetails", "Account", new { id = recipe.Id })">@recipe.Name</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Nemate još recepata.</p>
+}
+
+<a href="@Url.Action("CreateRecipe", "Account")" class="btn btn-primary">Dodaj novi recept</a>

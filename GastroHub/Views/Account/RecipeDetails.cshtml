@@ -1,0 +1,11 @@
+﻿@model GastroHub.Models.Recipe
+
+<h2>Detalji recepta: @Model.Name</h2>
+
+<div>
+    <p><strong>Sastojci:</strong> @Model.Ingredients</p>
+    <p><strong>Upute:</strong> @Model.Instructions</p>
+    <p><strong>Vrijeme slaganja:</strong> @Model.PreparationTime minuta</p>
+</div>
+
+<a href="@Url.Action("MyRecipes", "Account")" class="btn btn-secondary">Nazad na Moje recepte</a>

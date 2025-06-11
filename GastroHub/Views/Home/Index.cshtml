@@ -1,0 +1,52 @@
+﻿@model List<GastroHub.Models.Recipe>
+
+@{
+    ViewData["Title"] = "GastroHub";
+}
+
+<div class="container">
+    <!-- Naslov na sredini -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h1>GastroHub</h1>
+        </div>
+    </div>
+
+    <!-- Pretraga i gumb za dodavanje recepta -->
+    <div class="row mb-4 d-flex justify-content-center">
+        <div class="col-md-6 d-flex">
+            <form method="get" asp-action="Index">
+                <input type="text" class="form-control" placeholder="Pretraži" name="searchTerm" />
+                <button class="btn btn-primary" type="submit">Pretraži</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row mb-4 d-flex justify-content-center">
+        <div class="col-md-6">
+            <select class="form-control" id="ingredientFilter" name="ingredientFilter">
+                <option value="">Odaberi sastojke</option>
+                @foreach (var ingredient in ViewBag.IngredientFilter)
+                {
+                    <option value="@ingredient">@ingredient</option>
+                }
+            </select>
+        </div>
+    </div>
+
+    <!-- Kartice s receptima -->
+    <div class="row">
+        @foreach (var recipe in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">@recipe.Name</h5>
+                        
+                        <a href="@Url.Action("Details", "Home", new { id = recipe.Id })" class="btn btn-primary">Vidi detalje</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

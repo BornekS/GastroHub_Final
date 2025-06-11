@@ -1,0 +1,26 @@
+﻿@model GastroHub.Models.Recipe
+
+@{
+    ViewData["Title"] = "Detalji recepta";
+}
+
+<div class="container">
+    <h2>@Model.Name</h2>
+
+    <div>
+        <strong>Sastojci:</strong>
+        <p>@Model.Ingredients</p>
+    </div>
+
+    <div>
+        <strong>Upute:</strong>
+        <p>@Model.Instructions</p>
+    </div>
+    <div
+        <strong>Vrijeme slaganja:</strong> 
+    <p>@Model.PreparationTime minuta</p>
+</div>
+
+
+    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary mt-3">Natrag na sve recepte</a>
+</div>
