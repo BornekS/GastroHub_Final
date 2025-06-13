@@ -13,5 +13,7 @@ namespace GastroHub.Models
         [Required]
         public string PreparationTime { get; set; }
         // Navigacijsko svojstvo (korisnik koji je dodao recept)
+        // Dodano polje za označavanje omiljenih recepata
+        public bool IsFavorite { get; set; } // Označava je li recept omiljeni
     }
 }

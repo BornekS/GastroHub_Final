@@ -22,5 +22,12 @@
 </div>
 
 
-    <a href="@Url.Action("Index", "Home")" class="btn btn-secondary mt-3">Natrag na sve recepte</a>
-</div>
+    @if (string.IsNullOrEmpty(@Context.Session.GetString("User")))
+    {
+        <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">Natrag</a>
+    }
+    else
+    {
+        <!-- Ako je korisnik prijavljen, prikazujemo gumb "Nazad na moje recepte" -->
+        <a href="@Url.Action("MyRecipes", "Account")" class="btn btn-secondary">Nazad na moje recepte</a>
+    }

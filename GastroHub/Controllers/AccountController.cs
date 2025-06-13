@@ -90,6 +90,7 @@ namespace GastroHub.Controllers
         }
 
         // Osobni podaci korisnika (GET)
+        // Osobni podaci korisnika (GET)
         [HttpGet]
         public IActionResult Profile()
         {
@@ -99,8 +100,17 @@ namespace GastroHub.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            var user = _context.Users.FirstOrDefault(u => u.Username == username);
-            return View(user);
+            var user = _context.Users.Include(u => u.Recipes).FirstOrDefault(u => u.Username == username);
+
+            if (user != null)
+            {
+                // Filtriraj samo omiljene recepte
+                user.Recipes = user.Recipes.Where(r => r.IsFavorite).ToList();
+
+                return View(user); // Prikazivanje korisničkih podataka i omiljenih recepata
+            }
+
+            return RedirectToAction("Login", "Account"); // Ako korisnik nije prijavljen, preusmjerenje na prijavu
         }
 
         // Moji recepti (GET)
@@ -177,5 +187,148 @@ namespace GastroHub.Controllers
 
             return RedirectToAction("MyRecipes", "Account"); // Ako recept nije pronađen, preusmjerenje na Moje recepte
         }
+        // Prikazivanje forme za uređivanje recepta (GET)
+        [HttpGet]
+        public IActionResult EditRecipe(int id)
+        {
+            var username = HttpContext.Session.GetString("User");
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account"); // Ako korisnik nije prijavljen, preusmjerenje na prijavu
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user != null)
+            {
+                var recipe = _context.Recipes.FirstOrDefault(r => r.Id == id && r.UserId == user.Id); // Provjeravamo da je recept korisnika
+
+                if (recipe != null)
+                {
+                    return View(recipe); // Ako recept postoji, prikazujemo formu za uređivanje
+                }
+            }
+
+            return RedirectToAction("MyRecipes", "Account"); // Ako recept nije pronađen, preusmjeravanje na Moje recepte
+        }
+        // Spremanje izmjena recepta (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditRecipe(Recipe recipe)
+        {
+            var username = HttpContext.Session.GetString("User");
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user != null)
+            {
+                var existingRecipe = _context.Recipes.FirstOrDefault(r => r.Id == recipe.Id && r.UserId == user.Id);
+
+                if (existingRecipe != null)
+                {
+                    // Ažuriramo recept
+                    existingRecipe.Name = recipe.Name;
+                    existingRecipe.Ingredients = recipe.Ingredients;
+                    existingRecipe.Instructions = recipe.Instructions;
+                    existingRecipe.PreparationTime = recipe.PreparationTime;
+
+                    _context.Recipes.Update(existingRecipe);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction("MyRecipes", "Account"); // Preusmjerenje na Moje recepte nakon uspješnog ažuriranja
+                }
+            }
+
+            return View(recipe); // Ako nešto nije u redu, vraća korisniku formu
+        }
+        // Brisanje recepta (GET)
+        [HttpGet]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var username = HttpContext.Session.GetString("User");
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user != null)
+            {
+                var recipe = await _context.Recipes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == user.Id);
+
+                if (recipe != null)
+                {
+                    _context.Recipes.Remove(recipe);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return RedirectToAction("MyRecipes", "Account"); // Nakon brisanja, preusmjerenje na Moje recepte
+        }
+        // Označi recept kao omiljeni (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkAsFavorite(int id)
+        {
+            var username = HttpContext.Session.GetString("User");
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user != null)
+            {
+                var recipe = await _context.Recipes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == user.Id);
+
+                if (recipe != null)
+                {
+                    // Označavanje recepta kao omiljenog
+                    recipe.IsFavorite = true;
+
+                    _context.Recipes.Update(recipe);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return RedirectToAction("RecipeDetails", "Account", new { id = id }); // Preusmjerenje na detalje recepta
+        }
+
+        // Ukloni recept iz omiljenih (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveFromFavorites(int id)
+        {
+            var username = HttpContext.Session.GetString("User");
+            if (string.IsNullOrEmpty(username))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var user = _context.Users.FirstOrDefault(u => u.Username == username);
+
+            if (user != null)
+            {
+                var recipe = await _context.Recipes.FirstOrDefaultAsync(r => r.Id == id && r.UserId == user.Id);
+
+                if (recipe != null)
+                {
+                    // Uklanjanje recepta iz omiljenih
+                    recipe.IsFavorite = false;
+
+                    _context.Recipes.Update(recipe);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
+            return RedirectToAction("RecipeDetails", "Account", new { id = id }); // Preusmjerenje na detalje recepta
+        }
     }
+
 }

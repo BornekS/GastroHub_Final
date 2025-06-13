@@ -5,7 +5,20 @@
 <div>
     <p><strong>Sastojci:</strong> @Model.Ingredients</p>
     <p><strong>Upute:</strong> @Model.Instructions</p>
-    <p><strong>Vrijeme slaganja:</strong> @Model.PreparationTime minuta</p>
+    <p><strong>Vrijeme slaganja:</strong> @Model.PreparationTime</p>
 </div>
+
+@if (Model.IsFavorite)
+{
+    <form method="post" asp-action="RemoveFromFavorites" asp-route-id="@Model.Id">
+        <button type="submit" class="btn btn-danger">Ukloni iz omiljenih</button>
+    </form>
+}
+else
+{
+    <form method="post" asp-action="MarkAsFavorite" asp-route-id="@Model.Id">
+        <button type="submit" class="btn btn-success">Dodaj u omiljene</button>
+    </form>
+}
 
 <a href="@Url.Action("MyRecipes", "Account")" class="btn btn-secondary">Nazad na Moje recepte</a>

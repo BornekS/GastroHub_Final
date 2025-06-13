@@ -1,7 +1,24 @@
 ﻿@model GastroHub.Models.User
 
 <h2>Osobni podaci</h2>
-<div>
-    <p><strong>Korisničko ime:</strong> @Model.Username</p>
-    <p><strong>Email:</strong> @Model.Email</p>
-</div>
+
+<p><strong>Korisničko ime:</strong> @Model.Username</p>
+<p><strong>Email:</strong> @Model.Email</p>
+
+<h3>Omiljeni recepti</h3>
+
+@if (Model.Recipes != null && Model.Recipes.Any(r => r.IsFavorite))
+{
+    <ul>
+        @foreach (var recipe in Model.Recipes.Where(r => r.IsFavorite))
+        {
+            <li>
+                <a href="@Url.Action("RecipeDetails", "Account", new { id = recipe.Id })">@recipe.Name</a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Nemate omiljenih recepata.</p>
+}

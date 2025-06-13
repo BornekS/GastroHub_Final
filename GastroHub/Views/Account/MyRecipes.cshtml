@@ -9,6 +9,8 @@
         {
             <li>
                 <a href="@Url.Action("RecipeDetails", "Account", new { id = recipe.Id })">@recipe.Name</a>
+                | <a href="@Url.Action("EditRecipe", "Account", new { id = recipe.Id })">Uredi</a>
+                | <a href="@Url.Action("Delete", "Account", new { id = recipe.Id })" onclick="return confirm('Jeste li sigurni da želite obrisati ovaj recept?');">Obriši</a>
             </li>
         }
     </ul>
