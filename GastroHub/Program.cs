@@ -23,6 +23,8 @@ var app = builder.Build();
 // Postavljanje Session middleware-a
 app.UseSession();
 
+
+
 // Postavljanje putanje za SQLite bazu
 app.MapControllerRoute(
     name: "default",

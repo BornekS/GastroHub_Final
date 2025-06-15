@@ -19,7 +19,7 @@ namespace GestroHub.Controllers
 
         
         // Prikazivanje svih recepata s mogućnošću pretrage i sortiranja
-        public async Task<IActionResult> Index(string sortOrder,string searchTerm)
+        public async Task<IActionResult> Index(string sortOrder,string searchTerm, string categoryFilter)
         {
             // Dohvati sve recepte
             var recipesQuery = _context.Recipes.AsQueryable();
@@ -44,6 +44,11 @@ namespace GestroHub.Controllers
                     break;
             }
 
+            // Ako je korisnik odabrao kategoriju, filtriraj prema kategoriji
+            if (!string.IsNullOrEmpty(categoryFilter))
+            {
+                recipesQuery = recipesQuery.Where(r => r.Category == categoryFilter);
+            }
             var recipes = await recipesQuery.ToListAsync();
 
             // Pošaljemo sortiranje opcije u ViewBag
@@ -87,5 +92,6 @@ namespace GestroHub.Controllers
 
             return View(recipe);
         }
+
     }
 }

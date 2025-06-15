@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GastroHub.Controllers
@@ -26,30 +27,45 @@ namespace GastroHub.Controllers
         // Registracija (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(User user)
+        public async Task<IActionResult> Register(string username, string email, string password, string confirmPassword)
         {
-            if (ModelState.IsValid)
+            // 1. Provjera korisničkog imena (format)
+            var usernamePattern = @"^[a-zA-Z0-9_-]+$";
+            if (!Regex.IsMatch(username, usernamePattern))
             {
-                // Provjera postoji li korisnik s istim korisničkim imenom ili emailom
-                if (_context.Users.Any(u => u.Username == user.Username || u.Email == user.Email))
-                {
-                    ModelState.AddModelError("", "Korisničko ime ili email već postoji.");
-                    return View(user);
-                }
-
-                _context.Add(user);
-                await _context.SaveChangesAsync();
-
-                // Pohranjivanje korisničkog imena u Session
-                HttpContext.Session.SetString("User", user.Username);
-
-                // Pohranjivanje korisničkog imena u ViewData za prikaz u Layout
-                ViewData["User"] = user.Username;
-
-                return RedirectToAction("Index", "Home");
+                TempData["Error"] = "Korisničko ime smije sadržavati samo slova, brojeve, - i _ , bez razmaka.";
+                return RedirectToAction("Register");
             }
 
-            return View(user);
+            // 2. Provjera lozinki (moraju biti iste)
+            if (password != confirmPassword)
+            {
+                TempData["Error"] = "Lozinke se ne podudaraju.";
+                return RedirectToAction("Register");
+            }
+
+            // 3. Provjera postoji li korisnik s istim korisničkim imenom ili emailom u bazi
+            var existingUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username == username || u.Email == email);
+            if (existingUser != null)
+            {
+                TempData["Error"] = "Korisničko ime ili email već postoji.";
+                return RedirectToAction("Register");
+            }
+
+            // 4. Dodavanje korisnika u bazu
+            var newUser = new User
+            {
+                Username = username,
+                Email = email,
+                Password = password // Napomena: Lozinka bi trebala biti pohranjena sigurno (hashirana)
+            };
+
+            _context.Users.Add(newUser);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Registracija uspješna! Možete se prijaviti.";
+            return RedirectToAction("Index", "Home");
         }
 
         // Prijava (GET)
@@ -78,7 +94,7 @@ namespace GastroHub.Controllers
                 return RedirectToAction("Index", "Home"); // Preusmjerenje na početnu stranicu nakon prijave
             }
 
-            ModelState.AddModelError("", "Pogrešan korisnički podaci.");
+            ModelState.AddModelError("", "Pogrešani korisnički podaci.");
             return View();
         }
 
@@ -151,27 +167,28 @@ namespace GastroHub.Controllers
         // Dodavanje novog recepta (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateRecipe(Recipe recipe)
+        public async Task<IActionResult> CreateRecipe(Recipe recipe, IFormFile imageUrl)
         {
-            // Provjera da li je korisnik prijavljen
             var username = HttpContext.Session.GetString("User");
             if (string.IsNullOrEmpty(username))
             {
-                return RedirectToAction("Login", "Account"); // Ako korisnik nije prijavljen, preusmjerenje na prijavu
+                return RedirectToAction("Login", "Account");
             }
 
             var user = _context.Users.FirstOrDefault(u => u.Username == username);
 
             if (user != null)
             {
-                recipe.UserId = user.Id; // Povezivanje recepta s korisnikom
-                _context.Recipes.Add(recipe); // Dodavanje recepta u bazu
-                await _context.SaveChangesAsync(); // Spremanje promjena u bazu
+               
 
-                return RedirectToAction("MyRecipes", "Account"); // Preusmjerenje na Moje recepte
+                recipe.UserId = user.Id; // Povezivanje recepta s korisnikom
+                _context.Recipes.Add(recipe);
+                await _context.SaveChangesAsync();
+
+                return RedirectToAction("MyRecipes", "Account");
             }
 
-            return View(recipe); // Ako nešto nije u redu, vraća korisniku formu
+            return View(recipe);
         }
         // Detalji recepta (GET)
         [HttpGet]
@@ -214,7 +231,7 @@ namespace GastroHub.Controllers
         // Spremanje izmjena recepta (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditRecipe(Recipe recipe)
+        public async Task<IActionResult> EditRecipe(Recipe recipe, IFormFile imageUrl)
         {
             var username = HttpContext.Session.GetString("User");
             if (string.IsNullOrEmpty(username))
@@ -226,24 +243,25 @@ namespace GastroHub.Controllers
 
             if (user != null)
             {
-                var existingRecipe = _context.Recipes.FirstOrDefault(r => r.Id == recipe.Id && r.UserId == user.Id);
+                var existingRecipe = await _context.Recipes.FirstOrDefaultAsync(r => r.Id == recipe.Id && r.UserId == user.Id);
 
                 if (existingRecipe != null)
                 {
-                    // Ažuriramo recept
                     existingRecipe.Name = recipe.Name;
                     existingRecipe.Ingredients = recipe.Ingredients;
                     existingRecipe.Instructions = recipe.Instructions;
                     existingRecipe.PreparationTime = recipe.PreparationTime;
 
+                  
+
                     _context.Recipes.Update(existingRecipe);
                     await _context.SaveChangesAsync();
 
-                    return RedirectToAction("MyRecipes", "Account"); // Preusmjerenje na Moje recepte nakon uspješnog ažuriranja
+                    return RedirectToAction("MyRecipes", "Account");
                 }
             }
 
-            return View(recipe); // Ako nešto nije u redu, vraća korisniku formu
+            return View(recipe);
         }
         // Brisanje recepta (GET)
         [HttpGet]

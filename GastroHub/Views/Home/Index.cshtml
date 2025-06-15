@@ -17,12 +17,12 @@
         <div class="col-md-6 d-flex">
             <form method="get" asp-action="Index">
                 <input type="text" class="form-control" placeholder="Pretraži" name="searchTerm" />
+                <input type="text" class="form-control" placeholder="Kategorija" name="categoryFilter" />
                 <button class="btn btn-primary" type="submit">Pretraži</button>
             </form>
         </div>
     </div>
 
-    <!-- Gumb za sortiranje po vremenu -->
 
 
 <!-- Kartice s receptima -->
@@ -34,6 +34,7 @@
                 <div class="card-body">
                     <h5 class="card-title">@recipe.Name</h5>
                     <p class="card-text">@recipe.Ingredients</p>
+                    <p class="card-text">Kategorija: @recipe.Category</p>
                     <p class="card-text"><strong>Vrijeme slaganja:</strong> @recipe.PreparationTime</p>
                     <a href="@Url.Action("RecipeDetails", "Account", new { id = recipe.Id })" class="btn btn-primary">Pogledaj detalje</a>
                 </div>

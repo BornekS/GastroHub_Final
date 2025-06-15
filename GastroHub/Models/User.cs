@@ -21,6 +21,6 @@ namespace GastroHub.Models
         public string Password { get; set; } // Lozinka korisnika // Lozinka korisnika
         public ICollection<Recipe> Recipes { get; set; }  // Kolekcija recepata koje je korisnik dodao
                                                           // Povezivanje s UserProfile tablicom (1:1)
-        public UserProfile UserProfile { get; set; }  // 1:1 veza s UserProfile
+          
     }
 }
