@@ -1,0 +1,37 @@
+﻿@using MudBlazor
+@using GastroHub.Dtos.Auth
+@rendermode InteractiveServer
+
+<MudDialog>
+    <TitleContent>
+        Prijavi se
+    </TitleContent>
+    <DialogContent>
+        <MudForm @ref="form">
+            <MudTextField Label="Email" @bind-Value="loginDto.Email" Required="true" />
+            <MudTextField Label="Lozinka" @bind-Value="loginDto.Password" InputType="InputType.Password" Required="true" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Text" OnClick="Cancel">Odustani</MudButton>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Login">Prijavi se</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; }
+
+    private MudForm form;
+    private LoginDto loginDto = new();
+
+    private async Task Login()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(loginDto));
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

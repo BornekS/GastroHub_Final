@@ -1,26 +1,15 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity;
+using System.Collections.Generic;
 
-namespace GastroHub.Models
+namespace GastroHub.Models;
+
+public class AppUser : IdentityUser
 {
-    public class User
-    {
-        
-        public int Id { get; set; }          // Primarni ključ (ID korisnika)
+    public string? DisplayName { get; set; }
+    public string? Bio { get; set; }
 
-        [Required]
-        [StringLength(100)]
-        public string Username { get; set; } // Korisničko ime
+    public ICollection<Recipe> Recipes { get; set; } = new List<Recipe>();
+    public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
+    public ICollection<RecipeLike> LikedRecipes { get; set; } = new List<RecipeLike>();
 
-        [Required]
-        [EmailAddress]
-        public string Email { get; set; }    // Email korisnika
-
-        [Required]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } // Lozinka korisnika // Lozinka korisnika
-        public ICollection<Recipe> Recipes { get; set; }  // Kolekcija recepata koje je korisnik dodao
-                                                          // Povezivanje s UserProfile tablicom (1:1)
-          
-    }
 }

@@ -3,6 +3,7 @@ using System;
 using GastroHub.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GastroHub.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250617044514_AddIngredientEntity")]
+    partial class AddIngredientEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.6");
@@ -201,9 +204,6 @@ namespace GastroHub.Migrations
 
                     b.Property<double>("FatPer100g")
                         .HasColumnType("REAL");
-
-                    b.Property<string>("ImageUrl")
-                        .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -415,29 +415,6 @@ namespace GastroHub.Migrations
                     b.ToTable("Recipes");
                 });
 
-            modelBuilder.Entity("RecipeMedia", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("RecipeId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Url")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RecipeId");
-
-                    b.ToTable("RecipeMedia");
-                });
-
             modelBuilder.Entity("GastroHub.Models.Comment", b =>
                 {
                     b.HasOne("GastroHub.Models.Comment", "ParentComment")
@@ -591,17 +568,6 @@ namespace GastroHub.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("RecipeMedia", b =>
-                {
-                    b.HasOne("Recipe", "Recipe")
-                        .WithMany("Media")
-                        .HasForeignKey("RecipeId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Recipe");
-                });
-
             modelBuilder.Entity("GastroHub.Models.AppUser", b =>
                 {
                     b.Navigation("Favorites");
@@ -626,8 +592,6 @@ namespace GastroHub.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("Likes");
-
-                    b.Navigation("Media");
                 });
 #pragma warning restore 612, 618
         }

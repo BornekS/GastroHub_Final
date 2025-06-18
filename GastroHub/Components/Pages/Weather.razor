@@ -1,0 +1,12 @@
+﻿@inject IDialogService DialogService
+
+<MudButton OnClick="ShowTestDialog" Color="Color.Info">
+    Test Dialog
+</MudButton>
+
+@code {
+    private async Task ShowTestDialog()
+    {
+        await DialogService.ShowMessageBox("Test", "If you see this, DialogService is working.");
+    }
+}

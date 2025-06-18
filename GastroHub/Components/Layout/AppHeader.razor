@@ -1,0 +1,72 @@
+﻿@rendermode InteractiveServer
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using MudBlazor
+@using GastroHub.Dtos.Auth
+@using GastroHub.Components.Dialogs
+
+@inject NavigationManager Navigation
+@inject SignInManager<AppUser> SignInManager
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IDialogService DialogService
+
+<MudAppBar Elevation="4" Color="Color.Primary">
+    <MudText Typo="Typo.h6" Class="cursor-pointer" OnClick="OnLogoClick">
+        GastroHub
+    </MudText>
+
+    <MudSpacer />
+
+    <div class="d-flex align-center">
+        @if (IsAuthenticated)
+        {
+            <MudStack Direction="Row" Spacing="2" AlignItems="AlignItems.Center">
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="OnCreateClick">
+                    Kreiraj recept
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="OnAccountClick">
+                    Moj račun
+                </MudButton>
+                <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="Logout">
+                    Odjava
+                </MudButton>
+            </MudStack>
+        }
+        else
+        {
+            <div class="d-flex align-center">
+                <MudButton Variant="Variant.Filled" Size="Size.Small"
+                           Class="ml-2"
+                           OnClick='@(async () => await DialogService.ShowAsync<RegisterDialog>("Registriraj se"))'>
+                    Registriraj se
+                </MudButton>
+
+                <MudButton Variant="Variant.Filled" Size="Size.Small" Color="Color.Secondary"
+                           Class="ml-2"
+                           OnClick='@(async () => await DialogService.ShowAsync<LoginDialog>("Prijavi se"))'>
+                    Prijavi se
+                </MudButton>
+            </div>
+        }
+    </div>
+</MudAppBar>
+
+@code {
+    private bool IsAuthenticated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        IsAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+    }
+
+    private void OnLogoClick() => Navigation.NavigateTo("/");
+    private void OnCreateClick() => Navigation.NavigateTo("/recipes/create");
+    private void OnAccountClick() => Navigation.NavigateTo("/account");
+
+    private async Task Logout()
+    {
+        await SignInManager.SignOutAsync();
+        Navigation.NavigateTo("/");
+    }
+}

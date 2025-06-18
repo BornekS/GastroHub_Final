@@ -1,0 +1,116 @@
+﻿@page "/"
+@using GastroHub.Models
+@using MudBlazor
+@inject NavigationManager Navigation
+
+<PageTitle>GastroHub</PageTitle>
+<Header />
+
+<MudContainer Class="pa-4">
+
+    <MudText Typo="Typo.h6">Pretraži recepte</MudText>
+
+    <MudStack Direction="Column" Spacing="3" Class="w-100">
+        <!-- Search text -->
+        <MudTextField @bind-Value="SearchQuery"
+                      Label="Naziv recepta"
+                      Variant="Variant.Outlined" />
+
+        <!-- Include / Exclude ingredients -->
+        <MudGrid GutterSize="3">
+            <MudItem xs="12" sm="6">
+                <MudSelect T="string"
+                           Label="Uključi sastojke"
+                           MultiSelection="true"
+                           @bind-Values="IncludeIngredients">
+                    @foreach (var ing in Ingredients)
+                    {
+                        <MudSelectItem Value="@ing">@ing</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSelect T="string"
+                           Label="Isključi sastojke"
+                           MultiSelection="true"
+                           @bind-Values="ExcludeIngredients">
+                    @foreach (var ing in Ingredients)
+                    {
+                        <MudSelectItem Value="@ing">@ing</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Duration range -->
+        <MudSlider T="double"
+                  Values="@DurationRange"
+                  ValuesChanged="@OnDurationRangeChanged"
+                  Min="0"
+                  Max="180"
+                  Step="1"
+                  ThumbLabel="true" />
+        <MudText>Trajanje: @DurationRange[0] – @DurationRange[1] minuta</MudText>
+
+        <!-- Category select -->
+        <MudSelect T="int?"
+           Label="Kategorija"
+           @bind-Value="SelectedCategoryId">
+    @foreach (var cat in Categories)
+    {
+        <MudSelectItem T="int?" Value="@cat.Id">
+            @cat.Name
+        </MudSelectItem>
+    }
+    </MudSelect>
+
+        <!-- Search button -->
+        <MudButton Variant="Variant.Filled"
+                   OnClick="@SearchRecipes">
+            Pretraži
+        </MudButton>
+    </MudStack>
+</MudContainer>
+
+@code {
+    private string SearchQuery { get; set; } = "";
+    private HashSet<string> IncludeIngredients { get; set; } = new();
+    private HashSet<string> ExcludeIngredients { get; set; } = new();
+    // MudRangeSlider<T="double"> binds to an IList<double> (here double[])
+    private double[] DurationRange { get; set; } = new double[] { 0, 60 };
+    private void OnDurationRangeChanged(IList<double> newValues)
+    {
+        // IList<double> → double[]
+        DurationRange = newValues.ToArray();
+    }
+
+    private int? SelectedCategoryId { get; set; }
+
+    private List<Category> Categories = new();
+    private List<string> Ingredients = new();
+
+    protected override void OnInitialized()
+    {
+        Categories = new()
+        {
+            new Category { Id = 1, Name = "Predjela" },
+            new Category { Id = 2, Name = "Glavna jela" },
+            new Category { Id = 3, Name = "Deserti" }
+        };
+        Ingredients = new() { "Jaja", "Mlijeko", "Čokolada", "Brašno" };
+    }
+
+    private void SearchRecipes()
+    {
+        var query = $"/recipes?query={Uri.EscapeDataString(SearchQuery)}"
+                  + string.Concat(IncludeIngredients.Select(i => $"&IncludeIngredients={Uri.EscapeDataString(i)}"))
+                  + string.Concat(ExcludeIngredients.Select(i => $"&ExcludeIngredients={Uri.EscapeDataString(i)}"))
+                  + $"&MinPrepTime={Convert.ToInt32(DurationRange[0])}"
+                  + $"&MaxPrepTime={Convert.ToInt32(DurationRange[1])}";
+
+        if (SelectedCategoryId.HasValue)
+            query += $"&CategoryId={SelectedCategoryId.Value}";
+
+        Navigation.NavigateTo(query);
+    }
+}
